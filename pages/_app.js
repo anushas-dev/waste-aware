@@ -3,7 +3,7 @@ import Image from "next/image";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import { Client, Account } from "appwrite";
-import UserLogin from "../components/login";
+import UserLogin from "../components/Login";
 import { headers } from "next/dist/client/components/headers";
 
 
