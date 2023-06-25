@@ -1,38 +1,54 @@
 import "tailwindcss/tailwind.css";
-import Image from "next/image";
-import Footer from "../components/Footer";
-import Navbar from "../components/Navbar";
-import { Client, Account } from "appwrite";
-import UserLogin from "../components/Login";
-import { headers } from "next/dist/client/components/headers";
+import Navbar from '../components/Navbar'
+import Footer from '../components/Footer'
+import Passage from '@passageidentity/passage-node';
 
-
-async function componentDidMount () {
-  const headers = { "Content-Type": "application/json", "X-Appwrite-Project": 'process.env.NEXT_APPWRITE_PROECT', "X-Appwrite-Key": 'process.env.NEXT_APPWRITE_API_KEY' }
-  try {
-    const res = await fetch(`https://cloud.appwrite.io/v1`, headers);
-    const data = await res.json();
-    console.log(data);
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-
-function App({ Component, pageProps }) {
-
+function App({ Component, pageProps, isAuthorized, username }) {
   return (
     <div>
-
       <div class="space-y-4">
       </div>
-
       <br></br>
-      <Navbar class="bg-white border-gray-100 dark:bg-gray-900 dark:border-gray-700"></Navbar>
-      <Component {...pageProps} />
-
-      <Footer class="fixed bottom-0 left-0 z-20 w-full p-4 bg-white border-t border-gray-200 shadow md:flex md:items-center md:justify-between md:p-6 dark:bg-gray-800 dark:border-gray-600"></Footer>
+      {isAuthorized ?
+        <div>
+          <Navbar></Navbar>
+          <Component {...pageProps} />
+          <Footer></Footer>
+        </div> : <div >
+          <div className="flex justify-center"><h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-4xl dark:text-black">Session Expired</h1></div>
+          <hr></hr>
+          <div className="flex justify-center"> Please proceed to  &nbsp;<a href="/" className="underline">Login</a></div>
+        </div>}
     </div>
   );
 }
+
+export async function getServerSideProps(context) {
+  // getServerSideProps runs server-side only and will never execute on the client browser
+  // this allows the safe use of a private Passage API Key
+  const passage = new Passage({
+    appID: process.env.PASSAGE_APP_ID,
+    apiKey: process.env.PASSAGE_API_KEY,
+    authStrategy: "HEADER",
+  });
+  try {
+    const authToken = context.req.cookies['psg_auth_token'];
+    const req = {
+      headers: {
+        authorization: `Bearer ${authToken}`,
+      },
+    };
+    const userID = await passage.authenticateRequest(req);
+    if (userID) {
+      // user is authenticated
+      const { email, phone } = await passage.user.get(userID);
+      const identifier = email ? email : phone;
+      return { props: { isAuthorized: true, username: identifier } };
+    }
+  } catch (error) {
+    // authentication failed
+    return { props: { isAuthorized: false, username: '' } };
+  }
+}
+
 export default App;
