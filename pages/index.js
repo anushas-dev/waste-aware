@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 
+
 export default function Home({ appID }) {
   useEffect(() => {
     require('@passageidentity/passage-elements/passage-auth');
