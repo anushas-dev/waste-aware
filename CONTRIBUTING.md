@@ -15,11 +15,13 @@ Thank you for your interest in contributing to Waste-Aware! We welcome contribut
 ## Development Setup
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -37,39 +39,32 @@ npm run dev
 2. Update the README.md if needed
 3. Your PR should have a clear title and description
 4. Link any related issues in your PR description
-5. **Wait for automated checks to pass** - Our CI/CD workflows will automatically:
-   - Test your code across multiple Node.js versions
-   - Run linting and code quality checks
-   - Perform security audits
-   - Validate the production build
-   - Check your PR against our quality checklist
+5. **Wait for automated checks to pass** - Our automated test build workflow will:
+   - Test your code across Node.js 18.x and 20.x versions
+   - Run linting checks (warnings won't block the build)
+   - Validate that the application builds successfully
 
-### CI/CD Workflow Information
+### Automated Test Build Workflow
 
-We have automated workflows that help maintain code quality:
+We have an automated workflow that helps maintain build quality:
 
-- **CI/CD Pipeline**: Runs on every push and PR to test builds, security, and code quality
-- **PR Validation**: Provides detailed feedback on pull requests with targeted checks
-- **Dependency Updates**: Weekly automated checks for outdated packages and security issues
+- **Automated Test Builds**: Runs on every push and PR to test builds across multiple Node.js versions
 
-You can see the status of these checks in the "Actions" tab or as status checks on your PR. Make sure all checks pass before requesting review!
+You can see the status of these checks in the "Actions" tab or as status checks on your PR.
 
-### Common CI/CD Issues and Solutions
+### Common Build Issues and Solutions
 
 **Build Failures:**
+
 - Run `npm run build` locally to test
 - Check for missing dependencies in package.json
 - Ensure all imports are correct
 
-**Linting Errors:**
-- Run `npm run lint` locally first
-- Use `npm run lint -- --fix` to auto-fix simple issues
-- Follow the existing code style in the project
+**Linting Warnings:**
 
-**Security Audit Failures:**
-- Run `npm audit` to see vulnerabilities
-- Use `npm audit fix` for automatic fixes
-- Check our weekly dependency update issues for guidance
+- Run `npm run lint` locally first
+- Linting warnings won't block the build but should be addressed
+- Follow the existing code style in the project
 
 ## Reporting Issues
 
