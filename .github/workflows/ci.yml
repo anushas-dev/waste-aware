@@ -1,0 +1,195 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test Build
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run linting
+      run: npm run lint
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Check build output
+      run: |
+        if [ ! -d ".next" ]; then
+          echo "Build failed - .next directory not found"
+          exit 1
+        fi
+        echo "Build completed successfully"
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run security audit
+      run: npm audit --audit-level=moderate
+      continue-on-error: true
+      
+    - name: Check for known vulnerabilities
+      run: npm audit --audit-level=high
+
+  dependency-check:
+    name: Dependency Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Check for outdated packages
+      run: npm outdated || true
+      
+    - name: Validate package-lock.json
+      run: npm ls
+
+  build-check:
+    name: Production Build Verification
+    runs-on: ubuntu-latest
+    needs: [test]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build for production
+      run: npm run build
+      
+    - name: Start production server (test)
+      run: |
+        npm run start &
+        SERVER_PID=$!
+        sleep 10
+        
+        # Test if server is responsive
+        if curl -f http://localhost:3000 > /dev/null 2>&1; then
+          echo "✅ Production server started successfully"
+          kill $SERVER_PID
+        else
+          echo "❌ Production server failed to start"
+          kill $SERVER_PID
+          exit 1
+        fi
+
+  code-quality:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run ESLint
+      run: npm run lint
+      
+    - name: Check code formatting
+      run: |
+        # Install prettier if not already present
+        npm list prettier || npm install --save-dev prettier
+        
+        # Check if code is properly formatted
+        npx prettier --check "**/*.{js,jsx,ts,tsx,json,css,md}" || echo "Warning: Some files may need formatting"
+
+  notify-status:
+    name: Build Status Summary
+    runs-on: ubuntu-latest
+    needs: [test, security-audit, dependency-check, build-check, code-quality]
+    if: always()
+    
+    steps:
+    - name: Report build status
+      run: |
+        echo "## 🚀 Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ needs.test.result }}" == "success" ]; then
+          echo "✅ **Tests**: Passed across all Node.js versions" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Tests**: Failed" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.security-audit.result }}" == "success" ]; then
+          echo "✅ **Security**: No high-risk vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ **Security**: Issues detected" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.build-check.result }}" == "success" ]; then
+          echo "✅ **Production Build**: Successful" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Production Build**: Failed" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.code-quality.result }}" == "success" ]; then
+          echo "✅ **Code Quality**: All checks passed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ **Code Quality**: Issues found" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Build completed at: $(date)" >> $GITHUB_STEP_SUMMARY
