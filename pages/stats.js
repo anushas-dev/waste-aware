@@ -1,20 +1,35 @@
 import { headers } from "next/dist/client/components/headers";
 
 export async function getStaticProps() {
-    const req_headers = {
-        "content-type": "application/json",
-        "X-Appwrite-Project": process.env.NEXT_APPWRITE_PROJECT,
-        "X-Appwrite-Key": process.env.NEXT_APPWRITE_API_KEY
+    // Guard missing env and network errors; always return serializable props
+    const project = process.env.NEXT_APPWRITE_PROJECT;
+    const apiKey = process.env.NEXT_APPWRITE_API_KEY;
+    const databaseId = process.env.NEXT_APPWRITE_DATABASE_ID;
+    const collectionId = process.env.NEXT_APPWRITE_COLLECTION_ID;
+
+    if (!project || !apiKey || !databaseId || !collectionId) {
+        return { props: { food_data: [] } };
     }
-    const databasedId = process.env.NEXT_APPWRITE_DATABASE_ID
-    const collectionId = process.env.NEXT_APPWRITE_COLLECTION_ID
-    const res = await fetch("https://cloud.appwrite.io/v1/databases/" + databasedId + "/collections/" + collectionId + "/documents", {
-        method: "GET",
-        headers: req_headers
-    });
-    const data = await res.json();
-    const food_data = data.documents;
-    return { props: { food_data } };
+
+    try {
+        const req_headers = {
+            "content-type": "application/json",
+            "X-Appwrite-Project": project,
+            "X-Appwrite-Key": apiKey
+        };
+        const res = await fetch("https://cloud.appwrite.io/v1/databases/" + databaseId + "/collections/" + collectionId + "/documents", {
+            method: "GET",
+            headers: req_headers
+        });
+        if (!res.ok) {
+            return { props: { food_data: [] } };
+        }
+        const data = await res.json();
+        const food_data = Array.isArray(data?.documents) ? data.documents : [];
+        return { props: { food_data } };
+    } catch {
+        return { props: { food_data: [] } };
+    }
 }
 
 export default function Stats({ food_data }) {
@@ -23,7 +38,7 @@ export default function Stats({ food_data }) {
             justifyContent: 'center'
         }}>
             <br></br>
-            <figure class="bg-slate-800 rounded-xl p-8 dark:bg-slate-800">
+            <figure className="bg-slate-800 rounded-xl p-8 dark:bg-slate-800">
                 <div className="d-flex justify-content-center overflow-hidden">
                     <table className="min-w-full border text-center dark:border-neutral-500">
                         <thead className="border-b bg-neutral-50 font-medium dark:border-neutral-500 dark:text-neutral-800">
