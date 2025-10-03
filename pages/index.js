@@ -14,9 +14,10 @@ export default function Home({ appID }) {
 }
 
 export async function getStaticProps() {
+  const appID = process.env.NEXT_PUBLIC_PASSAGE_APP_ID || null; // Using null as fallback
   return {
     props: {
-      appID: process.env.PASSAGE_APP_ID
+      appID
     }
   };
 }

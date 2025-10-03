@@ -35,7 +35,7 @@ You can check the status of the workflow in the "Actions" tab of your GitHub rep
 Add this to your README.md to show build status:
 
 ```markdown
-![Automated Test Builds](https://github.com/jassu2244/waste-aware/workflows/Automated%20Test%20Builds/badge.svg)
+![Automated Test Builds](https://github.com/anushas-dev/waste-aware/workflows/Automated%20Test%20Builds/badge.svg)
 ```
 
 ## 🔧 Customization
