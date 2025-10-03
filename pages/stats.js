@@ -1,20 +1,35 @@
-import { headers } from "next/dist/client/components/headers";
+ 
 
 export async function getStaticProps() {
-    const req_headers = {
-        "content-type": "application/json",
-        "X-Appwrite-Project": process.env.NEXT_APPWRITE_PROJECT,
-        "X-Appwrite-Key": process.env.NEXT_APPWRITE_API_KEY
+    try {
+        const projectId = process.env.NEXT_APPWRITE_PROJECT;
+        const apiKey = process.env.NEXT_APPWRITE_API_KEY;
+        const databaseId = process.env.NEXT_APPWRITE_DATABASE_ID;
+        const collectionId = process.env.NEXT_APPWRITE_COLLECTION_ID;
+
+        // Check if required environment variables are set
+        if (!projectId || !apiKey || !databaseId || !collectionId) {
+            console.warn('Missing required Appwrite environment variables');
+            return { props: { food_data: [] } };
+        }
+
+        const req_headers = {
+            "content-type": "application/json",
+            "X-Appwrite-Project": projectId,
+            "X-Appwrite-Key": apiKey
+        }
+        
+        const res = await fetch(`https://cloud.appwrite.io/v1/databases/${databaseId}/collections/${collectionId}/documents`, {
+            method: "GET",
+            headers: req_headers
+        });
+        
+        const data = await res.json();
+        return { props: { food_data: data.documents || [] } };
+    } catch (error) {
+        console.error('Error fetching food data:', error);
+        return { props: { food_data: [] } };
     }
-    const databasedId = process.env.NEXT_APPWRITE_DATABASE_ID
-    const collectionId = process.env.NEXT_APPWRITE_COLLECTION_ID
-    const res = await fetch("https://cloud.appwrite.io/v1/databases/" + databasedId + "/collections/" + collectionId + "/documents", {
-        method: "GET",
-        headers: req_headers
-    });
-    const data = await res.json();
-    const food_data = data.documents;
-    return { props: { food_data } };
 }
 
 export default function Stats({ food_data }) {
