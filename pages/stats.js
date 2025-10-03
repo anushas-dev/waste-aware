@@ -1,33 +1,33 @@
-import { headers } from "next/dist/client/components/headers";
+ 
 
 export async function getStaticProps() {
-    // Guard missing env and network errors; always return serializable props
-    const project = process.env.NEXT_APPWRITE_PROJECT;
-    const apiKey = process.env.NEXT_APPWRITE_API_KEY;
-    const databaseId = process.env.NEXT_APPWRITE_DATABASE_ID;
-    const collectionId = process.env.NEXT_APPWRITE_COLLECTION_ID;
-
-    if (!project || !apiKey || !databaseId || !collectionId) {
-        return { props: { food_data: [] } };
-    }
-
     try {
+        const projectId = process.env.NEXT_APPWRITE_PROJECT;
+        const apiKey = process.env.NEXT_APPWRITE_API_KEY;
+        const databaseId = process.env.NEXT_APPWRITE_DATABASE_ID;
+        const collectionId = process.env.NEXT_APPWRITE_COLLECTION_ID;
+
+        // Check if required environment variables are set
+        if (!projectId || !apiKey || !databaseId || !collectionId) {
+            console.warn('Missing required Appwrite environment variables');
+            return { props: { food_data: [] } };
+        }
+
         const req_headers = {
             "content-type": "application/json",
-            "X-Appwrite-Project": project,
+            "X-Appwrite-Project": projectId,
             "X-Appwrite-Key": apiKey
-        };
-        const res = await fetch("https://cloud.appwrite.io/v1/databases/" + databaseId + "/collections/" + collectionId + "/documents", {
+        }
+        
+        const res = await fetch(`https://cloud.appwrite.io/v1/databases/${databaseId}/collections/${collectionId}/documents`, {
             method: "GET",
             headers: req_headers
         });
-        if (!res.ok) {
-            return { props: { food_data: [] } };
-        }
+        
         const data = await res.json();
-        const food_data = Array.isArray(data?.documents) ? data.documents : [];
-        return { props: { food_data } };
-    } catch {
+        return { props: { food_data: data.documents || [] } };
+    } catch (error) {
+        console.error('Error fetching food data:', error);
         return { props: { food_data: [] } };
     }
 }

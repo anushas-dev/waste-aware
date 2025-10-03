@@ -1,26 +1,23 @@
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useEffect } from 'react';
 
-export default function Home() {
-  const { data: session, status } = useSession();
-  const loading = status === 'loading';
+
+export default function Home({ appID }) {
+  useEffect(() => {
+    require('@passageidentity/passage-elements/passage-auth');
+  }, []);
 
   return (
     <>
-      <div className="min-h-[70vh] flex items-center justify-center p-4">
-        {!session && !loading && (
-          <button className="h-10 px-6 font-semibold rounded-md bg-gray-700 text-white" onClick={() => signIn('github')}>
-            Sign in with GitHub
-          </button>
-        )}
-        {session && (
-          <div className="space-y-2">
-            <div>Signed in as {session.user?.email || session.user?.name}</div>
-            <button className="h-10 px-6 font-semibold rounded-md bg-gray-700 text-white" onClick={() => signOut()}>
-              Sign out
-            </button>
-          </div>
-        )}
-      </div>
+      <passage-auth app-id={appID}></passage-auth>
     </>
   )
+}
+
+export async function getStaticProps() {
+  const appID = process.env.NEXT_PUBLIC_PASSAGE_APP_ID || null; // Using null as fallback
+  return {
+    props: {
+      appID
+    }
+  };
 }

@@ -27,8 +27,8 @@ export default function Options() {
                         <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Understand Expiry Dates</h5>
                         <p className="font-normal text-gray-700 dark:text-gray-400">
                             <ul className="list-disc">
-                                <li>Learn the difference between "best before" and "use by" dates.</li>
-                                <li>Understand that "best before" dates indicate quality, while "use by" dates indicate safety.</li>
+                                <li>Learn the difference between best before and use by dates.</li>
+                                <li>Understand that best before dates indicate quality, while use by dates indicate safety.</li>
                                 <li>Use your senses (smell, sight, and taste) to determine if food is still good to eat.</li>
                             </ul>
                         </p>
