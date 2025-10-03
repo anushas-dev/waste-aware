@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { getServerSession } from "next-auth";
+import { authOptions } from "./api/auth/[...nextauth]";
 
 export default function Profile() {
     return (
@@ -50,5 +52,19 @@ export default function Profile() {
             </figure>
         </div>
     )
+}
+
+export async function getServerSideProps(context) {
+	const session = await getServerSession(context.req, context.res, authOptions);
+	if (!session) {
+		return {
+			redirect: {
+				destination: '/',
+				permanent: false,
+			},
+		};
+	}
+
+	return { props: {} };
 }
 
