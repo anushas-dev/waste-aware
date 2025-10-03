@@ -15,11 +15,13 @@ Thank you for your interest in contributing to Waste-Aware! We welcome contribut
 ## Development Setup
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -37,6 +39,32 @@ npm run dev
 2. Update the README.md if needed
 3. Your PR should have a clear title and description
 4. Link any related issues in your PR description
+5. **Wait for automated checks to pass** - Our automated test build workflow will:
+   - Test your code across Node.js 18.x and 20.x versions
+   - Run linting checks (warnings won't block the build)
+   - Validate that the application builds successfully
+
+### Automated Test Build Workflow
+
+We have an automated workflow that helps maintain build quality:
+
+- **Automated Test Builds**: Runs on every push and PR to test builds across multiple Node.js versions
+
+You can see the status of these checks in the "Actions" tab or as status checks on your PR.
+
+### Common Build Issues and Solutions
+
+**Build Failures:**
+
+- Run `npm run build` locally to test
+- Check for missing dependencies in package.json
+- Ensure all imports are correct
+
+**Linting Warnings:**
+
+- Run `npm run lint` locally first
+- Linting warnings won't block the build but should be addressed
+- Follow the existing code style in the project
 
 ## Reporting Issues
 

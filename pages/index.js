@@ -7,6 +7,7 @@ export default function Home() {
 		return (<p>Loading...</p>);
 	}
 
+
 	return (
 		<>
 			{!session ? (
@@ -23,5 +24,6 @@ export default function Home() {
 				</div>
 			)}
 		</>
-	)
+	);
+
 }
